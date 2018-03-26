@@ -1,7 +1,7 @@
 
 class RemoteLogger {
   constructor(config) {
-    this.config = Object.assing({}, {
+    this.config = Object.assign({}, {
       endpoint: 'https://',
       debug: true,
       maxPerRequest: 100,
