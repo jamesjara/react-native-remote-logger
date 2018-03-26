@@ -34,13 +34,13 @@ class RemoteLogger {
   log(value) {
     if (this.data.length >= this.config.maxPerRequest) {
       this.send();
-    } else {
+    } 
       if (this.config.debug === true) {
-        // eslint-disable-next-line no-console
-        console.log('RL', value);
+          // eslint-disable-next-line no-console
+          console.log('RL', value);
       }
       this.addEntry(value);
-    }
+
   }
 }
 
