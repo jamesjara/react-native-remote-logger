@@ -27,6 +27,8 @@
     "babel-plugin-replace-object-assign": "0.0.1",
     "babel-polyfill": "^6.26.0",
     "babel-preset-env": "^1.6.1",
+    "elasticsearch": "^14.2.1",
+    "formdata-polyfill": "^3.0.9",
     "webpack": "^4.2.0"
   }
 }

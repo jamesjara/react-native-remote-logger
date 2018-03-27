@@ -27,7 +27,9 @@ var RemoteLogger = function () {
     this.config = _objectAssign({}, {
       endpoint: 'https://',
       debug: true,
-      maxPerRequest: 100
+      maxPerRequest: 100,
+      clientId: 'anon3',
+      type: null
     }, config);
     this.data = [];
   }
@@ -35,46 +37,54 @@ var RemoteLogger = function () {
   _createClass(RemoteLogger, [{
     key: 'addEntry',
     value: function addEntry(value) {
+      if (typeof value === 'string') return;
       this.data.push(value);
     }
   }, {
     key: 'send',
     value: function () {
       var _ref = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee() {
+        var clientId, entries, literalData, xhr;
         return regeneratorRuntime.wrap(function _callee$(_context) {
           while (1) {
             switch (_context.prev = _context.next) {
               case 0:
-                _context.prev = 0;
-                _context.next = 3;
-                return fetch(this.config.endpoint, {
-                  method: 'POST',
-                  headers: {
-                    Accept: 'application/json',
-                    'Content-Type': 'application/json'
-                  },
-                  body: JSON.stringify(this.data)
+                clientId = this.config.clientId;
+                entries = this.data.map(function (entry) {
+                  // eslint-disable-next-line
+                  entry.timestamp = new Date();
+                  return ['{ "index": { "_index": "' + clientId + '", "_type": "log" }}', JSON.stringify(entry)].join('\n');
                 });
+                literalData = entries.join('\n');
+                // eslint-disable-next-line
 
-              case 3:
-                this.data = [];
-                this.data.length = 0;
-                _context.next = 10;
-                break;
+                xhr = new XMLHttpRequest();
 
-              case 7:
-                _context.prev = 7;
-                _context.t0 = _context['catch'](0);
+                xhr.open('POST', this.config.endpoint, true);
+                xhr.setRequestHeader('Content-type', 'application/json');
+                xhr.send(literalData + '\n');
+                // eslint-disable-next-line
+                xhr.onreadystatechange = function () {
+                  if (xhr.status === 200) {
+                    this.data = [];
+                    this.data.length = 0;
+                  } else {
+                    // eslint-disable-next-line no-console
+                    console.log('RL ERROR - ', xhr, xhr.status);
+                  }
+                };
+                // eslint-disable-next-line
+                xhr.onerror = function () {
+                  // eslint-disable-next-line no-console
+                  console.log('RL ERROR - ', xhr.status);
+                };
 
-                // eslint-disable-next-line no-console
-                console.log('RL ERROR - ', _context.t0);
-
-              case 10:
+              case 9:
               case 'end':
                 return _context.stop();
             }
           }
-        }, _callee, this, [[0, 7]]);
+        }, _callee, this);
       }));
 
       function send() {
@@ -103,18 +113,16 @@ var RemoteLogger = function () {
 // eslint-disable-next-line no-shadow
 
 
-function RemoteLoggerReduxMid(RemoteLogger, _ref2) {
-  var getState = _ref2.getState;
-
+function RemoteLoggerReduxMid(RemoteLogger) {
   return function (next) {
     return function (action) {
-      var prevState = getState();
+      // const prevState = getState();
       var returnValue = next(action);
-      var nextState = getState();
+      // const nextState = getState();
       var entry = {
-        prev: prevState,
-        action: returnValue,
-        next: nextState
+        // prev: prevState,
+        action: returnValue
+        // next: nextState,
       };
       RemoteLogger.log(entry);
       return returnValue;
