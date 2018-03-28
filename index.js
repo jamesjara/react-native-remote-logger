@@ -26,8 +26,6 @@ class RemoteLogger {
   async send() {
     const { clientId } = this.config;
     const entries = this.data.map((entry) => {
-      // eslint-disable-next-line
-      entry.timestamp = new Date();
       return [
         `{ "index": { "_index": "${clientId}", "_type": "log" }}`,
         this.cleanJson(entry),
@@ -92,6 +90,7 @@ function RemoteLoggerReduxMid(RemoteLogger) {
     const returnValue = next(action);
     // const nextState = getState();
     const entry = {
+      timestamp: new Date(),  
       // prev: prevState,
       action: returnValue,
       // next: nextState,
