@@ -1,5 +1,7 @@
 'use strict';
 
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 var _objectAssign = function (target) {
@@ -35,15 +37,25 @@ var RemoteLogger = function () {
   }
 
   _createClass(RemoteLogger, [{
+    key: 'setClientId',
+    value: function setClientId(clientId) {
+      this.config.clientId = clientId;
+    }
+  }, {
     key: 'addEntry',
     value: function addEntry(value) {
-      if (typeof value === 'string') return;
+      if (typeof value === 'string') {
+        return false;
+      }
       this.data.push(value);
+      return true;
     }
   }, {
     key: 'send',
     value: function () {
       var _ref = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee() {
+        var _this = this;
+
         var clientId, entries, literalData, xhr;
         return regeneratorRuntime.wrap(function _callee$(_context) {
           while (1) {
@@ -53,7 +65,7 @@ var RemoteLogger = function () {
                 entries = this.data.map(function (entry) {
                   // eslint-disable-next-line
                   entry.timestamp = new Date();
-                  return ['{ "index": { "_index": "' + clientId + '", "_type": "log" }}', JSON.stringify(entry)].join('\n');
+                  return ['{ "index": { "_index": "' + clientId + '", "_type": "log" }}', _this.cleanJson(entry)].join('\n');
                 });
                 literalData = entries.join('\n');
                 // eslint-disable-next-line
@@ -93,6 +105,24 @@ var RemoteLogger = function () {
 
       return send;
     }()
+  }, {
+    key: 'cleanJson',
+    value: function cleanJson(entry) {
+      var cache = [];
+      var clean = JSON.stringify(entry, function (key, value) {
+        if (typeof value === 'function') {
+          return undefined;
+        }
+        if ((typeof value === 'undefined' ? 'undefined' : _typeof(value)) === 'object' && value !== null) {
+          if (cache.indexOf(value) !== -1) {
+            return undefined;
+          }
+          cache.push(value);
+        }
+        return value;
+      });
+      return clean;
+    }
   }, {
     key: 'log',
     value: function log(value) {

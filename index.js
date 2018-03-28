@@ -11,9 +11,16 @@ class RemoteLogger {
     this.data = [];
   }
 
+  setClientId(clientId) {
+    this.config.clientId = clientId;
+  }
+
   addEntry(value) {
-    if (typeof value === 'string') return;
+    if (typeof value === 'string') {
+      return false;
+    }
     this.data.push(value);
+    return true;
   }
 
   async send() {
@@ -23,7 +30,7 @@ class RemoteLogger {
       entry.timestamp = new Date();
       return [
         `{ "index": { "_index": "${clientId}", "_type": "log" }}`,
-        JSON.stringify(entry),
+        this.cleanJson(entry),
       ].join('\n');
     });
     const literalData = entries.join('\n');
@@ -47,6 +54,23 @@ class RemoteLogger {
       // eslint-disable-next-line no-console
       console.log('RL ERROR - ', xhr.status);
     };
+  }
+
+  cleanJson(entry) {
+    const cache = [];
+    const clean = JSON.stringify(entry, (key, value) => {
+      if (typeof value === 'function') {
+        return undefined;
+      }
+      if (typeof value === 'object' && value !== null) {
+        if (cache.indexOf(value) !== -1) {
+          return undefined;
+        }
+        cache.push(value);
+      }
+      return value;
+    });
+    return clean;
   }
 
   log(value) {
