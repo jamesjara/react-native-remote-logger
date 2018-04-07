@@ -6,6 +6,7 @@ Features:
 - Offline support
 - Created for redux and thunk
 - Entries are composed by the action value
+- Time based, automatically timestamp per entry
 
 ## Install
 `npm install --save react-native-remote-logger`
@@ -64,3 +65,8 @@ Create a new instance in less than 5 minutes here: https://aws.amazon.com/elasti
 1. Go to management > Index Patterns > Create index pattern
 2. Write down the client id which is the index pattern
 3. Go to Discover > search the recently created index pattern
+
+
+# VIDEO DEMO
+https://www.youtube.com/watch?v=k73ifeAnLVg&feature=youtu.be
+
